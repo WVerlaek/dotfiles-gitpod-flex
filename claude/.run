@@ -43,6 +43,13 @@ if [ ! -f ~/.claude/settings.json ]; then
       "Bash(git commit:*)",
       "Bash(git pull:*)",
       "Bash(git log:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm run vitest:*)",
+      "Bash(npx vitest:*)",
+      "Bash(yarn test:*)",
+      "Bash(yarn lint:*)",
+      "Bash(yarn tsc:*)",
       "WebFetch(domain:www.gitpod.io)"
     ],
     "deny": []

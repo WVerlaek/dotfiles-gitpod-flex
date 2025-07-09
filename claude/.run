@@ -43,6 +43,7 @@ if [ ! -f ~/.claude/settings.json ]; then
       "Bash(git commit:*)",
       "Bash(git pull:*)",
       "Bash(git log:*)",
+      "Bash(git config user.name)",
       "Bash(npm test:*)",
       "Bash(npm run test:*)",
       "Bash(npm run vitest:*)",

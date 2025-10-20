@@ -10,7 +10,7 @@ else
     fi
 fi
 
-claude config set -g theme dark
+# claude config set -g theme dark
 
 DEST="$HOME/.claude.json"
 if [ ! -f "$DEST" ]; then

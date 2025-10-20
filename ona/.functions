@@ -1,0 +1,3 @@
+replace-in-env() {
+    leeway run runner/shared/supervisor:replace-in-env -DENV_ID="$1"
+}

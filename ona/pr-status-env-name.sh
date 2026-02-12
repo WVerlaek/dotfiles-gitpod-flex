@@ -36,6 +36,17 @@ get_env_id() {
     gitpod environment get -f id 2>/dev/null | tr -d '[:space:]'
 }
 
+# Resolve the workspace repo directory (not dotfiles).
+# Uses the checkout location from the Gitpod environment metadata.
+get_workspace_dir() {
+    local checkout_location
+    checkout_location=$(gitpod environment get -o json 2>/dev/null \
+        | jq -r '.[0].spec.content.initializer.specs[0].git.checkoutLocation // empty')
+    if [ -n "$checkout_location" ] && [ -d "/workspace/${checkout_location}" ]; then
+        echo "/workspace/${checkout_location}"
+    fi
+}
+
 get_repo_owner_and_name() {
     local url
     url=$(git remote get-url origin 2>/dev/null)
@@ -164,6 +175,15 @@ main() {
         echo "error: GH_TOKEN is not set" >&2
         exit 1
     fi
+
+    # cd into the workspace repo so git commands target the right repo
+    local workspace_dir
+    workspace_dir=$(get_workspace_dir)
+    if [ -z "$workspace_dir" ]; then
+        echo "error: could not determine workspace directory" >&2
+        exit 1
+    fi
+    cd "$workspace_dir"
 
     local env_id nwo owner repo last_label="__INIT__"
 

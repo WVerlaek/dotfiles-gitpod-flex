@@ -1,0 +1,15 @@
+# Start PR status → environment name poller in the background.
+# Requires GH_TOKEN and a Gitpod environment context.
+_pr_status_script="$HOME/dotfiles/ona/pr-status-env-name.sh"
+_pr_status_log="/tmp/pr-status-env-name.log"
+_pr_status_pidfile="/tmp/pr-status-env-name.pid"
+
+if [ -f "$_pr_status_pidfile" ] && kill -0 "$(cat "$_pr_status_pidfile")" 2>/dev/null; then
+    echo "pr-status-env-name: already running (pid $(cat "$_pr_status_pidfile"))"
+elif [ -n "${GH_TOKEN:-}" ] && [ -f /usr/local/gitpod/secrets/token ]; then
+    bash "$_pr_status_script" &>"$_pr_status_log" &
+    echo $! > "$_pr_status_pidfile"
+    echo "pr-status-env-name: started (pid $!, log $_pr_status_log)"
+fi
+
+unset _pr_status_script _pr_status_log _pr_status_pidfile

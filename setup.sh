@@ -23,6 +23,3 @@ if [[ -d "$HOME/dotfiles" ]]; then
 fi
 
 export SHELL=zsh
-
-# Start PR status → environment name poller
-source "$HOME/dotfiles/ona/.run"

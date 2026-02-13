@@ -1,13 +1,26 @@
 # Start PR status → environment name poller in the background.
-# Requires GH_TOKEN and a Gitpod environment context.
+# Acquires GH_TOKEN from git credentials since it may not be in the
+# environment yet at dotfiles install time.
 _pr_status_script="$HOME/dotfiles/ona/pr-status-env-name.sh"
 _pr_status_log="/tmp/pr-status-env-name.log"
 _pr_status_pidfile="/tmp/pr-status-env-name.pid"
 
 if [ -f "$_pr_status_pidfile" ] && kill -0 "$(cat "$_pr_status_pidfile")" 2>/dev/null; then
     echo "pr-status-env-name: already running (pid $(cat "$_pr_status_pidfile"))"
-elif [ -n "${GH_TOKEN:-}" ] && [ -f /usr/local/gitpod/secrets/token ]; then
-    bash "$_pr_status_script" &>"$_pr_status_log" &
+elif [ -f /usr/local/gitpod/secrets/token ]; then
+    (
+        if [ -z "${GH_TOKEN:-}" ] && command -v git >/dev/null 2>&1; then
+            GH_TOKEN=$(printf 'protocol=https\nhost=github.com\n' | git credential fill 2>/dev/null | awk -F= '/password/ {print $2}' 2>/dev/null)
+            export GH_TOKEN
+        fi
+
+        if [ -z "${GH_TOKEN:-}" ]; then
+            echo "pr-status-env-name: could not acquire GH_TOKEN, skipping" >&2
+            exit 1
+        fi
+
+        exec bash "$_pr_status_script"
+    ) &>"$_pr_status_log" &
     echo $! > "$_pr_status_pidfile"
     echo "pr-status-env-name: started (pid $!, log $_pr_status_log)"
 fi

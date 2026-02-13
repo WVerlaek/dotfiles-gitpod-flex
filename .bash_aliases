@@ -11,4 +11,3 @@ source "$HOME/dotfiles/git/.run"
 source "$HOME/dotfiles/claude/.run"
 
 source "$HOME/dotfiles/ona/.functions"
-source "$HOME/dotfiles/ona/.run"

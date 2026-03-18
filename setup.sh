@@ -3,6 +3,12 @@ set -ex
 
 echo "Setting up dotfiles"
 
+# Timing test: measure how long setup takes to complete
+echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) dotfiles setup started" > "$HOME/.dotfiles-setup-timing"
+sleep 30
+echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) dotfiles setup completed" >> "$HOME/.dotfiles-setup-timing"
+touch "$HOME/.dotfiles-setup-complete"
+
 
 if [[ -z "$ZSH_VERSION" ]]; then
     echo "Installing zsh"

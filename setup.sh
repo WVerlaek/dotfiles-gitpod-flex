@@ -1,28 +1,37 @@
 #!/bin/bash
-set -ex
+# Dotfiles setup — runs async to avoid blocking env startup.
+# A sentinel file signals completion so the shell can wait if needed.
 
-echo "Setting up dotfiles"
+DOTFILES_READY="$HOME/.dotfiles-ready"
+DOTFILES_LOG="/tmp/dotfiles-setup.log"
 
+rm -f "$DOTFILES_READY"
 
-if [[ -z "$ZSH_VERSION" ]]; then
-    echo "Installing zsh"
-    sudo apt install zsh
-fi
+# Background the actual setup work
+(
+    set -ex
 
-if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-    echo "Installing oh-my-zsh..."
-    sh "$HOME/dotfiles/.oh-my-zsh/install.sh" --unattended
-fi
+    if ! command -v zsh &>/dev/null; then
+        sudo apt-get install -y -qq zsh
+    fi
 
-if [[ -d "$HOME/dotfiles" ]]; then
-    # In gitpod, dotfiles are stored in this directory
-    pushd "$HOME/dotfiles"
-        cp .zshrc "$HOME/.zshrc"
-        cp -r .oh-my-zsh/themes/* "$HOME/.oh-my-zsh/themes/"
-    popd
-fi
+    if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+        sh "$HOME/dotfiles/.oh-my-zsh/install.sh" --unattended
+    fi
 
-export SHELL=zsh
+    if [[ -d "$HOME/dotfiles" ]]; then
+        pushd "$HOME/dotfiles"
+            cp .zshrc "$HOME/.zshrc"
+            cp -r .oh-my-zsh/themes/* "$HOME/.oh-my-zsh/themes/"
+        popd
+    fi
 
-# Start PR status → environment name poller
-source "$HOME/dotfiles/ona/.run"
+    sudo chsh "$(id -un)" --shell "$(command -v zsh)"
+
+    # Start PR status → environment name poller
+    source "$HOME/dotfiles/ona/.run"
+
+    touch "$DOTFILES_READY"
+) &>"$DOTFILES_LOG" &
+
+echo "dotfiles: setup running in background (pid $!, log $DOTFILES_LOG)"
